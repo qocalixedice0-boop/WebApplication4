@@ -1,0 +1,13 @@
+﻿using WebApplication4.Models;
+
+namespace WebApplication4.Repositories;
+
+    public interface IBookRepository
+    {
+        Task<List<Book>> GetBooksAsync();
+        Task CreateAsync(Book book);
+        Task UpdateAsync (Book book);
+        Task DeleteAsync(Guid id);
+
+    }
+

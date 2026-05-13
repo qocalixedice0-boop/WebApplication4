@@ -1,0 +1,46 @@
+﻿using Microsoft.EntityFrameworkCore;
+using WebApplication4.Data;
+using WebApplication4.Models;
+
+namespace WebApplication4.Repositories
+{
+    public class BookRepository : IBookRepository
+    {
+        private readonly AppDbContext _context;
+        public BookRepository(AppDbContext context)
+        {
+            _context = context;
+        }
+        public async Task<List<Book>> GetBooksAsync()
+        {
+            return await _context.Books.ToListAsync();
+        }
+        public async Task CreateAsync(Book book)
+        {
+            _context.Books.Add(book);
+            await _context.SaveChangesAsync();
+        }
+        public async Task UpdateAsync (Book book)
+        {
+            var book1= await _context.Books.FirstOrDefaultAsync(b=>b.Id==book.Id);
+            if (book1 == null)
+            {
+                return;
+            }
+            book1.Title = book.Title;
+            book1.Author = book.Author;
+            await _context.SaveChangesAsync();
+
+        }
+        public async Task DeleteAsync(Guid id)
+        {
+            var book1 = await _context.Books.FirstOrDefaultAsync(b => b.Id == id);
+            if (book1 == null)
+            {
+                return;
+            }
+            _context.Books.Remove(book1);
+            await _context.SaveChangesAsync();
+        }
+    }
+}

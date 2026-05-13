@@ -1,6 +1,11 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
+using WebApplication4.Data;
+using WebApplication4.DTOs;
 using WebApplication4.Models;
+using WebApplication4.Repositories;
+using WebApplication4.Services;
 
 namespace WebApplication4.Controllers
 {
@@ -8,41 +13,36 @@ namespace WebApplication4.Controllers
     [ApiController]
     public class BookController : ControllerBase
     {
-        private static List<Book> books = new List<Book>();
+        private readonly IBookService _service;
+        public BookController(IBookService service)
+        {
+            _service = service;
+        }
 
         [HttpGet]
-        public IActionResult GetBooks()
+        public async Task<IActionResult> GetBooks()
         {
-            return Ok(books);
+            return Ok(await _service.GetBooksAsync());
         }
         [HttpPost]
-        public IActionResult Create(Book book)
+        public async Task<IActionResult> Create(BookDto dto)
         {
-            book.Id = Guid.NewGuid();
-            books.Add(book);
-            return Ok(book);
+            await _service.CreateAsync(dto);
+            return Ok();
         }
         [HttpPut("{id}")]
-        public IActionResult Update(Guid id, Book updateBook)
+        public async Task<IActionResult> Update(Guid id, BookDto dto)
         {
-            var book = books.FirstOrDefault(b => b.Id == id);
-            if (book == null)
-            {
-                return NotFound();
-            }
-            book.Title = updateBook.Title;
-            book.Author = updateBook.Author;
-            return Ok(book);
+            if(dto==null) return BadRequest();
+           
+            
+            await _service.UpdateAsync(id,dto);
+            return NoContent();
         }
         [HttpDelete("{id}")]
-        public IActionResult Delete(Guid id)
+        public async Task<IActionResult> Delete(Guid id)
         {
-            var book = books.FirstOrDefault(b => b.Id == id);
-            if (book == null)
-            {
-                return NotFound();
-            }
-            books.Remove(book);
+            await _service.DeleteAsync(id);
             return NoContent();
         }
     }
