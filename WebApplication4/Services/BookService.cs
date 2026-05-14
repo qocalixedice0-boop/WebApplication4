@@ -1,4 +1,4 @@
-﻿using WebApplication4.DTOs;
+﻿    using WebApplication4.DTOs;
 using WebApplication4.Models;
 using WebApplication4.Repositories;
 
@@ -15,17 +15,24 @@ namespace WebApplication4.Services
             _categoryRepo = categoryRepo;
             _authorRepo = authorRepo;
         }
-        public async Task<List<BookDto>> GetBooksAsync()
+        public async Task<List<BookResponseDto>> GetBooksAsync(bool include)
         {
-            var books = await _bookRepo.GetBooksAsync();
-            return books.Select(b => new BookDto
+            var books = await _bookRepo.GetBooksAsync(include);
+            return books.Select(b => new BookResponseDto
             {
+                Id = b.Id,
                 Title = b.Title,
-                CategoryId = b.CategoryId,
-                AuthorIds = b.Authors.Select(a => a.Id).ToList()
+                CategoryName = b.Category != null ? b.Category.Name : null,
+                Authors = b.Authors != null
+                ? b.Authors.Select(a => new AuthorDto
+                {
+                    Id = a.Id,
+                    Name = a.Name
+                }).ToList()
+                : new List<AuthorDto>()
             }).ToList();
         }
-        public async Task CreateAsync(BookDto dto)
+        public async Task CreateAsync(CreateBookDto dto)
         {
             var category = await _categoryRepo.GetByIdAsync(dto.CategoryId);
             var authors = await _authorRepo.GetByIdsAsync(dto.AuthorIds);
@@ -39,19 +46,22 @@ namespace WebApplication4.Services
             };
             await _bookRepo.CreateAsync(book);
         }
-        public async Task UpdateAsync(Guid id, BookDto dto)
+        public async Task UpdateAsync(Guid id, CreateBookDto dto)
         {
-            if (dto == null) return;
+            var book = await _bookRepo.GetByIdAsync(id);
+
+            if (book == null)
+                return;
+
             var category = await _categoryRepo.GetByIdAsync(dto.CategoryId);
             var authors = await _authorRepo.GetByIdsAsync(dto.AuthorIds);
-            var book = new Book
-            {
-                Id = id,
-                Title = dto.Title,
-                CategoryId = dto.CategoryId,
-                Category = category,
-                Authors = authors
-            };
+
+            
+            book.Title = dto.Title;
+            book.CategoryId = dto.CategoryId;
+            book.Category = category;
+            book.Authors = authors;
+
             await _bookRepo.UpdateAsync(book);
         }
         public async Task DeleteAsync(Guid id)

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Query;
 using System.Threading.Tasks;
 using WebApplication4.Data;
 using WebApplication4.DTOs;
@@ -20,18 +21,19 @@ namespace WebApplication4.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetBooks()
+        public async Task<IActionResult> GetBooks([FromQuery] bool include=false )
         {
-            return Ok(await _service.GetBooksAsync());
+            var result = await _service.GetBooksAsync(include);
+            return Ok(result);
         }
         [HttpPost]
-        public async Task<IActionResult> Create(BookDto dto)
+        public async Task<IActionResult> Create(CreateBookDto dto)
         {
             await _service.CreateAsync(dto);
             return Ok();
         }
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(Guid id, BookDto dto)
+        public async Task<IActionResult> Update(Guid id, CreateBookDto dto)
         {
             if(dto==null) return BadRequest();
            

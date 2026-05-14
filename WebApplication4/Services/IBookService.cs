@@ -5,9 +5,9 @@ namespace WebApplication4.Services
 {
     public interface IBookService
     {
-         Task<List<BookDto>> GetBooksAsync();
-         Task CreateAsync(BookDto dto);
-         Task UpdateAsync(Guid Id,BookDto dto);
+        Task<List<BookResponseDto>> GetBooksAsync(bool include);
+         Task CreateAsync(CreateBookDto dto);
+         Task UpdateAsync(Guid Id,CreateBookDto dto);
          Task DeleteAsync(Guid id);
 
     }

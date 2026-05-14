@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using WebApplication4.Data;
 using WebApplication4.Models;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace WebApplication4.Repositories
 {
@@ -11,13 +12,30 @@ namespace WebApplication4.Repositories
         {
             _context = context;
         }
-        public async Task<List<Book>> GetBooksAsync()
+        public async Task<List<Book>> GetBooksAsync(bool include)
+        {
+            var query = _context.Books.AsQueryable();
+
+            if (include)
+            {
+                query = query
+                    .Include(b => b.Category)
+                    .Include(b => b.Authors);
+            }
+
+            return await query.ToListAsync();
+        }
+
+
+        public async Task<Book> GetByIdAsync(Guid id)
         {
             return await _context.Books
-                .Include(b=> b.Category)
+                .Include(b => b.Category)
                 .Include(b => b.Authors)
-                .ToListAsync();
+                .FirstOrDefaultAsync(b => b.Id == id);
         }
+
+
         public async Task CreateAsync(Book book)
         {
             _context.Books.Add(book);

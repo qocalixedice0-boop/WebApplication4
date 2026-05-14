@@ -1,6 +1,6 @@
 ﻿namespace WebApplication4.DTOs
 {
-    public class BookDto
+    public class CreateBookDto
     {
         public string Title { get; set; }
         public Guid CategoryId { get; set; }
