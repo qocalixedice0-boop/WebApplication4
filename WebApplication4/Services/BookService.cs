@@ -6,44 +6,57 @@ namespace WebApplication4.Services
 {
     public class BookService : IBookService
     {
-        private readonly IBookRepository _repo;
-        public BookService(IBookRepository repo)
+        private readonly IBookRepository _bookRepo;
+        private readonly ICategoryRepository _categoryRepo;
+        private readonly IAuthorRepository _authorRepo;
+        public BookService(IBookRepository bookRepo, ICategoryRepository categoryRepo, IAuthorRepository authorRepo)
         {
-            _repo = repo;
+            _bookRepo = bookRepo;
+            _categoryRepo = categoryRepo;
+            _authorRepo = authorRepo;
         }
         public async Task<List<BookDto>> GetBooksAsync()
         {
-            var books =await _repo.GetBooksAsync();
+            var books = await _bookRepo.GetBooksAsync();
             return books.Select(b => new BookDto
             {
                 Title = b.Title,
-                Author = b.Author
+                CategoryId = b.CategoryId,
+                AuthorIds = b.Authors.Select(a => a.Id).ToList()
             }).ToList();
         }
         public async Task CreateAsync(BookDto dto)
         {
+            var category = await _categoryRepo.GetByIdAsync(dto.CategoryId);
+            var authors = await _authorRepo.GetByIdsAsync(dto.AuthorIds);
             var book = new Book
             {
                 Id = Guid.NewGuid(),
                 Title = dto.Title,
-                Author = dto.Author
+                CategoryId = dto.CategoryId,
+                Category = category,
+                Authors = authors
             };
-            await _repo.CreateAsync(book);
+            await _bookRepo.CreateAsync(book);
         }
         public async Task UpdateAsync(Guid id, BookDto dto)
         {
             if (dto == null) return;
+            var category = await _categoryRepo.GetByIdAsync(dto.CategoryId);
+            var authors = await _authorRepo.GetByIdsAsync(dto.AuthorIds);
             var book = new Book
             {
                 Id = id,
                 Title = dto.Title,
-                Author = dto.Author
+                CategoryId = dto.CategoryId,
+                Category = category,
+                Authors = authors
             };
-            await _repo.UpdateAsync(book);
+            await _bookRepo.UpdateAsync(book);
         }
         public async Task DeleteAsync(Guid id)
         {
-            await _repo.DeleteAsync(id);
+            await _bookRepo.DeleteAsync(id);
         }
     }
 }

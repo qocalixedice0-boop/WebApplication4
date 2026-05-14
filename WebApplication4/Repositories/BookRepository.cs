@@ -13,7 +13,10 @@ namespace WebApplication4.Repositories
         }
         public async Task<List<Book>> GetBooksAsync()
         {
-            return await _context.Books.ToListAsync();
+            return await _context.Books
+                .Include(b=> b.Category)
+                .Include(b => b.Authors)
+                .ToListAsync();
         }
         public async Task CreateAsync(Book book)
         {
@@ -22,13 +25,16 @@ namespace WebApplication4.Repositories
         }
         public async Task UpdateAsync (Book book)
         {
-            var book1= await _context.Books.FirstOrDefaultAsync(b=>b.Id==book.Id);
+            var book1= await _context.Books
+                .Include(b => b.Authors)
+                .FirstOrDefaultAsync(b=>b.Id==book.Id);
             if (book1 == null)
             {
                 return;
             }
             book1.Title = book.Title;
-            book1.Author = book.Author;
+            book1.CategoryId = book.CategoryId;
+            book1.Authors = book.Authors;
             await _context.SaveChangesAsync();
 
         }
