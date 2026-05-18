@@ -21,17 +21,25 @@ namespace WebApplication4.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetBooks([FromQuery] bool include=false )
+        public async Task<IActionResult> GetBooks( bool category=false,bool authors=false)
         {
-            var result = await _service.GetBooksAsync(include);
+            var result = await _service.GetBooksAsync(category,authors);
             return Ok(result);
         }
+
+
+        
+
+
         [HttpPost]
         public async Task<IActionResult> Create(CreateBookDto dto)
         {
             await _service.CreateAsync(dto);
             return Ok();
         }
+
+
+
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(Guid id, CreateBookDto dto)
         {
@@ -41,9 +49,13 @@ namespace WebApplication4.Controllers
             await _service.UpdateAsync(id,dto);
             return NoContent();
         }
+
+
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
+            if(id==Guid.Empty) return BadRequest();
             await _service.DeleteAsync(id);
             return NoContent();
         }

@@ -1,4 +1,4 @@
-﻿    using WebApplication4.DTOs;
+﻿using WebApplication4.DTOs;
 using WebApplication4.Models;
 using WebApplication4.Repositories;
 
@@ -9,33 +9,50 @@ namespace WebApplication4.Services
         private readonly IBookRepository _bookRepo;
         private readonly ICategoryRepository _categoryRepo;
         private readonly IAuthorRepository _authorRepo;
-        public BookService(IBookRepository bookRepo, ICategoryRepository categoryRepo, IAuthorRepository authorRepo)
+
+        public BookService(
+            IBookRepository bookRepo,
+            ICategoryRepository categoryRepo,
+            IAuthorRepository authorRepo)
         {
             _bookRepo = bookRepo;
             _categoryRepo = categoryRepo;
             _authorRepo = authorRepo;
         }
-        public async Task<List<BookResponseDto>> GetBooksAsync(bool include)
+
+        public async Task<List<BookResponseDto>> GetBooksAsync(bool authors,bool category)
         {
-            var books = await _bookRepo.GetBooksAsync(include);
+            var books = await _bookRepo.GetBooksAsync(authors, category);
+
             return books.Select(b => new BookResponseDto
             {
                 Id = b.Id,
                 Title = b.Title,
-                CategoryName = b.Category != null ? b.Category.Name : null,
-                Authors = b.Authors != null
-                ? b.Authors.Select(a => new AuthorDto
-                {
-                    Id = a.Id,
-                    Name = a.Name
-                }).ToList()
-                : new List<AuthorDto>()
+
+                Category = category && b.Category != null
+                    ? new CategoryDto
+                    {
+                        Id = b.Category.Id,
+                        Name = b.Category.Name
+                    }
+                    : null,
+
+                Authors = authors && b.Authors != null
+                    ? b.Authors.Select(a => new AuthorDto
+                    {
+                        Id = a.Id,
+                        Name = a.Name
+                    }).ToList()
+                    : new List<AuthorDto>()
             }).ToList();
         }
+
         public async Task CreateAsync(CreateBookDto dto)
         {
-            var category = await _categoryRepo.GetByIdAsync(dto.CategoryId);
+            var category = await _categoryRepo.GetCategoryByIdAsync(dto.CategoryId);
+
             var authors = await _authorRepo.GetByIdsAsync(dto.AuthorIds);
+
             var book = new Book
             {
                 Id = Guid.NewGuid(),
@@ -44,8 +61,10 @@ namespace WebApplication4.Services
                 Category = category,
                 Authors = authors
             };
+
             await _bookRepo.CreateAsync(book);
         }
+
         public async Task UpdateAsync(Guid id, CreateBookDto dto)
         {
             var book = await _bookRepo.GetByIdAsync(id);
@@ -53,10 +72,10 @@ namespace WebApplication4.Services
             if (book == null)
                 return;
 
-            var category = await _categoryRepo.GetByIdAsync(dto.CategoryId);
+            var category = await _categoryRepo.GetCategoryByIdAsync(dto.CategoryId);
+
             var authors = await _authorRepo.GetByIdsAsync(dto.AuthorIds);
 
-            
             book.Title = dto.Title;
             book.CategoryId = dto.CategoryId;
             book.Category = category;
@@ -64,6 +83,7 @@ namespace WebApplication4.Services
 
             await _bookRepo.UpdateAsync(book);
         }
+
         public async Task DeleteAsync(Guid id)
         {
             await _bookRepo.DeleteAsync(id);

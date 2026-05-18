@@ -4,6 +4,10 @@ namespace WebApplication4.Repositories
 {
     public interface ICategoryRepository
     {
-        Task<Category> GetByIdAsync(Guid id);   
+        Task<Category> GetCategoryByIdAsync(Guid id);   
+       Task<List<Category>> GetCategoryAsync(bool books);
+       Task CreateAsync(Category category);
+       Task UpdateAsync(Category category);
+       Task DeleteAsync(Guid id);
     }
 }

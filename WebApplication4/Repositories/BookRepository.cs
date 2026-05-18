@@ -12,15 +12,20 @@ namespace WebApplication4.Repositories
         {
             _context = context;
         }
-        public async Task<List<Book>> GetBooksAsync(bool include)
+        public async Task<List<Book>> GetBooksAsync(
+     bool authors,
+     bool category)
         {
-            var query = _context.Books.AsQueryable();
+            IQueryable<Book> query = _context.Books;
 
-            if (include)
+            if (authors)
             {
-                query = query
-                    .Include(b => b.Category)
-                    .Include(b => b.Authors);
+                query = query.Include(b => b.Authors);
+            }
+
+            if (category)
+            {
+                query = query.Include(b => b.Category);
             }
 
             return await query.ToListAsync();
@@ -41,20 +46,24 @@ namespace WebApplication4.Repositories
             _context.Books.Add(book);
             await _context.SaveChangesAsync();
         }
-        public async Task UpdateAsync (Book book)
+        public async Task UpdateAsync(Book book)
         {
-            var book1= await _context.Books
-                .Include(b => b.Authors)
-                .FirstOrDefaultAsync(b=>b.Id==book.Id);
+            var book1 = await _context.Books
+                .FirstOrDefaultAsync(b => b.Id == book.Id);
+
             if (book1 == null)
-            {
                 return;
-            }
+
             book1.Title = book.Title;
             book1.CategoryId = book.CategoryId;
-            book1.Authors = book.Authors;
-            await _context.SaveChangesAsync();
 
+            var authors = await _context.Authors
+                .Where(a => book.Authors.Select(x => x.Id).Contains(a.Id))
+                .ToListAsync();
+
+            book1.Authors = authors;
+
+            await _context.SaveChangesAsync();
         }
         public async Task DeleteAsync(Guid id)
         {

@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using WebApplication4.Data;
 using WebApplication4.DTOs;
-using WebApplication4.Models;
+using WebApplication4.Services;
 
 namespace WebApplication4.Controllers
 {
@@ -10,62 +8,50 @@ namespace WebApplication4.Controllers
     [ApiController]
     public class AuthorsController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly IAuthorService _authorService;
 
-        public AuthorsController(AppDbContext context)
+        public AuthorsController(IAuthorService authorService)
         {
-            _context = context;
+            _authorService = authorService;
         }
 
-        
-        [HttpPost]
-        public async Task<IActionResult> Create(AuthorDto dto)
-        {
-            var author = new Author
-            {
-                Id = Guid.NewGuid(),
-                Name = dto.Name
-            };
-
-            _context.Authors.Add(author);
-            await _context.SaveChangesAsync();
-
-            return Ok(author);
-        }
-
-        
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll( bool books = false)
         {
-            return Ok(await _context.Authors.ToListAsync());
+            var authors = await _authorService.GetAuthorsAsync(books);
+            return Ok(authors);
         }
 
- 
-
-        
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Update(Guid id, AuthorDto dto)
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(Guid id)
         {
-            var author = await _context.Authors.FindAsync(id);
-            if (author == null) return NotFound();
+            var author = await _authorService.GetByIdAsync(id);
 
-            author.Name = dto.Name;
-            await _context.SaveChangesAsync();
+            if (author == null)
+                return NotFound("Author not found");
 
             return Ok(author);
         }
 
-        
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] CreateAuthorDto dto)
+        {
+            await _authorService.CreateAsync(dto);
+            return Ok("Author created successfully");
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(Guid id, [FromBody] CreateAuthorDto dto)
+        {
+            await _authorService.UpdateAsync(id, dto);
+            return Ok("Author updated successfully");
+        }
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var author = await _context.Authors.FindAsync(id);
-            if (author == null) return NotFound();
-
-            _context.Authors.Remove(author);
-            await _context.SaveChangesAsync();
-
-            return Ok();
+            await _authorService.DeleteAsync(id);
+            return Ok("Author deleted successfully");
         }
     }
 }

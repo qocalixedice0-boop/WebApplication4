@@ -1,7 +1,7 @@
 ﻿namespace WebApplication4.DTOs
 {
-    public class CategoryDto
-    {
+    public class AuthorResponseDto
+    { 
         public Guid Id { get; set; }
         public string Name { get; set; }
     }

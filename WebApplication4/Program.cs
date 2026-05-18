@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using WebApplication4.Data;
 using WebApplication4.Repositories;
 using WebApplication4.Services;
@@ -22,6 +22,10 @@ builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IAuthorRepository, AuthorRepository>();
 
 builder.Services.AddScoped<IBookService, BookService>();
+
+builder.Services.AddScoped<IAuthorService, AuthorService>();
+
+builder.Services.AddScoped<ICategoryService, CategoryService>();
 
 var app = builder.Build();
 
