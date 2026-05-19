@@ -20,16 +20,16 @@ namespace WebApplication4.Services
             _authorRepo = authorRepo;
         }
 
-        public async Task<List<BookResponseDto>> GetBooksAsync(bool authors,bool category)
+        public async Task<List<BookResponseDto>> GetBooksAsync(bool includeCategory, bool includeAuthors)
         {
-            var books = await _bookRepo.GetBooksAsync(authors, category);
+            var books = await _bookRepo.GetBooksAsync(includeCategory, includeAuthors);
 
             return books.Select(b => new BookResponseDto
             {
                 Id = b.Id,
                 Title = b.Title,
 
-                Category = category && b.Category != null
+                Category = includeCategory && b.Category != null
                     ? new CategoryDto
                     {
                         Id = b.Category.Id,
@@ -37,7 +37,7 @@ namespace WebApplication4.Services
                     }
                     : null,
 
-                Authors = authors && b.Authors != null
+                Authors = includeAuthors && b.Authors != null
                     ? b.Authors.Select(a => new AuthorDto
                     {
                         Id = a.Id,

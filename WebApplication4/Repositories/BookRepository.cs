@@ -13,20 +13,22 @@ namespace WebApplication4.Repositories
             _context = context;
         }
         public async Task<List<Book>> GetBooksAsync(
-     bool authors,
-     bool category)
+     bool includeCategory,
+     bool includeAuthors)
         {
             IQueryable<Book> query = _context.Books;
 
-            if (authors)
+            if (includeCategory)
+            {
+                query = query.Include(b => b.Category);
+            }
+
+            if (includeAuthors)
             {
                 query = query.Include(b => b.Authors);
             }
 
-            if (category)
-            {
-                query = query.Include(b => b.Category);
-            }
+           
 
             return await query.ToListAsync();
         }

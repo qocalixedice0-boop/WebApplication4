@@ -13,15 +13,15 @@ namespace WebApplication4.Repositories
         }
 
 
-        public async Task<List<Category>> GetCategoryAsync(bool books)
+        public async Task<List<Category>> GetCategoryAsync(bool includeBooks)
         {
             var query = _context.Categories.AsQueryable();
 
-            if (books)
+            if (includeBooks)
             {
                 query = query
-                    .Include(c => c.Books)
-                        .ThenInclude(b => b.Authors);
+                    .Include(c => c.Books);
+                        
             }
 
             return await query.ToListAsync();

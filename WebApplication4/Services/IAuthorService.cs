@@ -4,7 +4,7 @@ namespace WebApplication4.Services
 {
     public interface IAuthorService
     {
-        Task<List<AuthorResponseDto>> GetAuthorsAsync(bool include);
+        Task<List<AuthorResponseDto>> GetAuthorsAsync(bool includeBooks);
         Task<AuthorResponseDto> GetByIdAsync(Guid id);
         Task CreateAsync(CreateAuthorDto dto);
         Task UpdateAsync(Guid id,CreateAuthorDto dto);

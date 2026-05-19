@@ -5,7 +5,7 @@ namespace WebApplication4.Services
 {
     public interface IBookService
     {
-        Task<List<BookResponseDto>> GetBooksAsync(bool category,bool authors);
+        Task<List<BookResponseDto>> GetBooksAsync(bool includeCategory,bool includeAuthors);
          Task CreateAsync(CreateBookDto dto);
          Task UpdateAsync(Guid Id,CreateBookDto dto);
          Task DeleteAsync(Guid id);

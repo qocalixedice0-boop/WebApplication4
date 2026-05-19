@@ -4,7 +4,7 @@ namespace WebApplication4.Repositories
 {
     public interface IAuthorRepository
     {
-        Task<List<Author>> GetAllAsync();
+        Task<List<Author>> GetAllAsync(bool includeBooks);
         Task<Author> GetByIdAsync(Guid id);
         Task<List<Author>> GetByIdsAsync(List<Guid> ids);
 

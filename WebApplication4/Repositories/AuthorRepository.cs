@@ -13,12 +13,16 @@ namespace WebApplication4.Repositories
             _context = context;
         }
 
-        public async Task<List<Author>> GetAllAsync()
+        public async Task<List<Author>> GetAllAsync(bool includeBooks)
         {
-            return await _context.Authors
-                .Include(a => a.Books)
-                    .ThenInclude(b => b.Category)
-                .ToListAsync();
+            var query = _context.Authors.AsQueryable();
+
+            if (includeBooks)
+            {
+                query = query.Include(a => a.Books);
+            }
+
+            return await query.ToListAsync();
         }
 
 

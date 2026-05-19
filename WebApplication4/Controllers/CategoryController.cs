@@ -21,9 +21,9 @@ namespace WebApplication4.Controllers
 
 
         [HttpGet]
-        public async Task<IActionResult> GetAll( bool books = false)
+        public async Task<IActionResult> GetAll( bool includeBooks = false)
         {
-            var categories = await _categoryService.GetCategoryAsync(books);
+            var categories = await _categoryService.GetCategoryAsync(includeBooks);
 
             return Ok(categories);
         }

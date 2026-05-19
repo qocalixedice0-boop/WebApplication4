@@ -21,9 +21,9 @@ namespace WebApplication4.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetBooks( bool category=false,bool authors=false)
+        public async Task<IActionResult> GetBooks( bool  includeCategory=false,bool includeAuthors=false)
         {
-            var result = await _service.GetBooksAsync(category,authors);
+            var result = await _service.GetBooksAsync(includeCategory,includeAuthors);
             return Ok(result);
         }
 

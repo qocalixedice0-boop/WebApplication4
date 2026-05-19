@@ -4,7 +4,7 @@ namespace WebApplication4.Repositories;
 
 public interface IBookRepository
 {
-    Task<List<Book>> GetBooksAsync(bool category, bool authors);
+    Task<List<Book>> GetBooksAsync(bool includeCategory, bool includeAuthors);
     Task<Book> GetByIdAsync(Guid id);
     Task CreateAsync(Book book);
     Task UpdateAsync(Book book);
