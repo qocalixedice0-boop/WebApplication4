@@ -1,11 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.Query;
-using System.Threading.Tasks;
-using WebApplication4.Data;
 using WebApplication4.DTOs;
-using WebApplication4.Models;
-using WebApplication4.Repositories;
 using WebApplication4.Services;
 
 namespace WebApplication4.Controllers
@@ -21,14 +16,18 @@ namespace WebApplication4.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetBooks( bool  includeCategory=false,bool includeAuthors=false)
+        public async Task<IActionResult> GetBooks([FromQuery] bool includeCategory, [FromQuery] bool includeAuthors)
         {
-            var result = await _service.GetBooksAsync(includeCategory,includeAuthors);
+            var result = await _service.GetBooksAsync(includeCategory, includeAuthors);
             return Ok(result);
         }
 
-
-        
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetBookById(Guid id, [FromQuery] bool includeCategory, [FromQuery] bool includeAuthors)
+        {
+            var result = await _service.GetByIdAsync(id, includeCategory, includeAuthors);
+            return Ok(result);
+        }
 
 
         [HttpPost]

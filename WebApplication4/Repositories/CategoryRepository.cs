@@ -27,13 +27,20 @@ namespace WebApplication4.Repositories
             return await query.ToListAsync();
         }
 
+        
 
-        public async Task<Category> GetCategoryByIdAsync(Guid id)
+
+        public async Task<Category> GetCategoryByIdAsync(Guid id, bool includeBooks = false)
         {
-            return await _context.Categories
-                .Include(c => c.Books)
-                .ThenInclude(b => b.Authors)
-                .FirstOrDefaultAsync(c => c.Id == id);
+            var query = _context.Categories.AsQueryable();
+
+            if (includeBooks)
+            {
+                query = query
+                    .Include(c => c.Books);
+            }
+
+            return await query.FirstOrDefaultAsync(c => c.Id == id);
         }
 
         public async Task CreateAsync(Category category)
@@ -45,23 +52,16 @@ namespace WebApplication4.Repositories
 
         public async Task UpdateAsync(Category category)
         {
-            var category1 = await _context.Categories
+            var existingCategory = await _context.Categories
                 .FirstOrDefaultAsync(c => c.Id == category.Id);
 
-            if (category1 == null)
-                return;
-
-            category1.Name = category.Name;
+            existingCategory.Name = category.Name;
 
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteAsync(Guid id)
+        public async Task DeleteAsync(Category category)
         {
-            var category = await _context.Categories
-                .FirstOrDefaultAsync(c => c.Id == id);
-            if (category == null)
-                return;
             _context.Categories.Remove(category);
             await _context.SaveChangesAsync();
         }

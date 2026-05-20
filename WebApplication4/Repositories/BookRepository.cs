@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using WebApplication4.Data;
+using WebApplication4.DTOs;
 using WebApplication4.Models;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace WebApplication4.Repositories
 {
@@ -12,9 +12,7 @@ namespace WebApplication4.Repositories
         {
             _context = context;
         }
-        public async Task<List<Book>> GetBooksAsync(
-     bool includeCategory,
-     bool includeAuthors)
+        public async Task<List<Book>> GetBooksAsync(bool includeCategory, bool includeAuthors)
         {
             IQueryable<Book> query = _context.Books;
 
@@ -34,13 +32,20 @@ namespace WebApplication4.Repositories
         }
 
 
-        public async Task<Book> GetByIdAsync(Guid id)
+        public async Task<Book> GetByIdAsync(Guid id, bool includeCategory,bool includeAuthors)
         {
-            return await _context.Books
-                .Include(b => b.Category)
-                .Include(b => b.Authors)
-                .FirstOrDefaultAsync(b => b.Id == id);
+            IQueryable<Book> q = _context.Books;
+
+            if (includeCategory)
+                q = q.Include(x => x.Category);
+
+            if (includeAuthors)
+                q = q.Include(x => x.Authors);
+
+            return await q.FirstOrDefaultAsync(x => x.Id == id);
         }
+
+        
 
 
         public async Task CreateAsync(Book book)
@@ -50,31 +55,24 @@ namespace WebApplication4.Repositories
         }
         public async Task UpdateAsync(Book book)
         {
-            var book1 = await _context.Books
+            var existingBook = await _context.Books
+                .Include(b => b.Authors)
                 .FirstOrDefaultAsync(b => b.Id == book.Id);
 
-            if (book1 == null)
-                return;
-
-            book1.Title = book.Title;
-            book1.CategoryId = book.CategoryId;
+            existingBook.Title = book.Title;
+            existingBook.CategoryId = book.CategoryId;
 
             var authors = await _context.Authors
                 .Where(a => book.Authors.Select(x => x.Id).Contains(a.Id))
                 .ToListAsync();
 
-            book1.Authors = authors;
+            existingBook.Authors = authors;
 
             await _context.SaveChangesAsync();
         }
-        public async Task DeleteAsync(Guid id)
+        public async Task DeleteAsync(Book book)
         {
-            var book1 = await _context.Books.FirstOrDefaultAsync(b => b.Id == id);
-            if (book1 == null)
-            {
-                return;
-            }
-            _context.Books.Remove(book1);
+            _context.Books.Remove(book);
             await _context.SaveChangesAsync();
         }
     }

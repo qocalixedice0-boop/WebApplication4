@@ -26,12 +26,14 @@ namespace WebApplication4.Repositories
         }
 
 
-        public async Task<Author> GetByIdAsync(Guid id)
+        public async Task<Author> GetByIdAsync(Guid id, bool includeBooks = false)
         {
-            return await _context.Authors
-                .Include(a => a.Books)
-                    .ThenInclude(b => b.Category)
-                .FirstOrDefaultAsync(a => a.Id == id);
+           var query = _context.Authors.AsQueryable();
+            if (includeBooks)
+            {
+                query = query.Include(a => a.Books);
+            }
+            return await query.FirstOrDefaultAsync(a => a.Id == id);
         }
 
 
@@ -50,29 +52,20 @@ namespace WebApplication4.Repositories
         }
 
         
-        public async Task Update(Author author)
+        public async Task UpdateAsync(Author author)
         {
             var existing = await _context.Authors
                 .FirstOrDefaultAsync(a => a.Id == author.Id);
-
-            if (existing == null)
-                return;
 
             existing.Name = author.Name;
 
             await _context.SaveChangesAsync();
         }
 
-        
-        public async Task Delete(Author author)
-        {
-            var existing = await _context.Authors
-                .FirstOrDefaultAsync(a => a.Id == author.Id);
 
-            if (existing == null)
-                return;
-
-            _context.Authors.Remove(existing);
+        public async Task DeleteAsync(Author author)
+        { 
+            _context.Authors.Remove(author);
 
             await _context.SaveChangesAsync();
         }

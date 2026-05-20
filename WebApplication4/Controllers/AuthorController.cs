@@ -16,16 +16,16 @@ namespace WebApplication4.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll( bool includeBooks = false)
+        public async Task<IActionResult> GetAll([FromQuery] bool includeBooks = false)
         {
             var authors = await _authorService.GetAuthorsAsync(includeBooks);
             return Ok(authors);
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(Guid id)
+        public async Task<IActionResult> GetById(Guid id, [FromQuery] bool includeBooks = false)
         {
-            var author = await _authorService.GetByIdAsync(id);
+            var author = await _authorService.GetByIdAsync(id, includeBooks);
 
             if (author == null)
                 return NotFound("Author not found");

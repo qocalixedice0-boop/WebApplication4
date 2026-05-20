@@ -21,7 +21,7 @@ namespace WebApplication4.Controllers
 
 
         [HttpGet]
-        public async Task<IActionResult> GetAll( bool includeBooks = false)
+        public async Task<IActionResult> GetAll([FromQuery] bool includeBooks = false)
         {
             var categories = await _categoryService.GetCategoryAsync(includeBooks);
 
@@ -29,11 +29,13 @@ namespace WebApplication4.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(Guid id)
+        public async Task<IActionResult> GetById(Guid id, [FromQuery] bool includeBooks = false)
         {
-            var category = await _categoryService.GetCategoryByIdAsync(id);
+            var category = await _categoryService.GetCategoryByIdAsync(id, includeBooks);
+
             if (category == null)
                 return NotFound();
+
             return Ok(category);
         }
 
@@ -51,7 +53,7 @@ namespace WebApplication4.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(Guid id, CreateCategoryDto dto)
         {
-            var category = await _categoryService.GetCategoryByIdAsync(id);
+            var category = await _categoryService.GetCategoryByIdAsync(id, false);
 
             if (category == null)
                 return NotFound();
@@ -64,7 +66,7 @@ namespace WebApplication4.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var category = await _categoryService.GetCategoryByIdAsync(id);
+            var category = await _categoryService.GetCategoryByIdAsync(id, false);
 
             if (category == null)
                 return NotFound();

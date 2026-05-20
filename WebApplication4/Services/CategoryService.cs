@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using WebApplication4.DTOs;
+using WebApplication4.Exceptions;
 using WebApplication4.Models;
 using WebApplication4.Repositories;
 
@@ -14,10 +15,10 @@ namespace WebApplication4.Services
             _categoryRepo = categoryRepo;
         }
 
-        
-        public async Task<List<CategoryResponseDto>> GetCategoryAsync(bool books)
+
+        public async Task<List<CategoryResponseDto>> GetCategoryAsync(bool includeBooks)
         {
-            var categories = await _categoryRepo.GetCategoryAsync(books);
+            var categories = await _categoryRepo.GetCategoryAsync(includeBooks);
 
             return categories.Select(c => new CategoryResponseDto
             {
@@ -26,20 +27,33 @@ namespace WebApplication4.Services
             }).ToList();
         }
 
-        public async Task<CategoryResponseDto> GetCategoryByIdAsync(Guid id)
-        {
-            var category = await _categoryRepo.GetCategoryByIdAsync(id);
+      
 
-            if (category == null) return null;
+        public async Task<CategoryResponseDto> GetCategoryByIdAsync(Guid id, bool includeBooks)
+        {
+            var category = await _categoryRepo.GetCategoryByIdAsync(id, includeBooks);
+
+            if (category == null)
+            {
+                throw new NotFoundException("Category tapilmadi");
+            }
 
             return new CategoryResponseDto
             {
                 Id = category.Id,
-                Name = category.Name
+                Name = category.Name,
+
+                Books = includeBooks && category.Books != null
+                    ? category.Books.Select(b => new BookDto
+                    {
+                        Id = b.Id,
+                        Title = b.Title
+                    }).ToList()
+                    : new List<BookDto>()
             };
         }
 
-        
+
         public async Task CreateAsync(CreateCategoryDto dto)
         {
             var category = new Category
@@ -53,9 +67,12 @@ namespace WebApplication4.Services
 
         public async Task UpdateAsync(Guid id, CreateCategoryDto dto)
         {
-            var category = await _categoryRepo.GetCategoryByIdAsync(id);
+            var category = await _categoryRepo.GetCategoryByIdAsync(id, false);
 
-            if (category == null) return;
+            if (category == null)
+            {
+                throw new NotFoundException("Category tapilmadi");
+            }
 
             category.Name = dto.Name;
 
@@ -64,11 +81,14 @@ namespace WebApplication4.Services
 
         public async Task DeleteAsync(Guid id)
         {
-            var category = await _categoryRepo.GetCategoryByIdAsync(id);
+            var category = await _categoryRepo.GetCategoryByIdAsync(id,false);
 
-            if (category == null) return;
+            if (category == null)
+            {
+                throw new NotFoundException("Category tapilmadi");
+            }
 
-            await _categoryRepo.DeleteAsync(id);
+            await _categoryRepo.DeleteAsync(category);
         }
     }
 }

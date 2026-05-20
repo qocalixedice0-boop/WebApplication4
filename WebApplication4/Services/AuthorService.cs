@@ -1,17 +1,61 @@
-﻿using Microsoft.EntityFrameworkCore;
-using WebApplication4.Data;
-using WebApplication4.DTOs;
+﻿using WebApplication4.DTOs;
+using WebApplication4.Exceptions;
 using WebApplication4.Models;
+using WebApplication4.Repositories;
 
 namespace WebApplication4.Services
 {
     public class AuthorService : IAuthorService
     {
-        private readonly AppDbContext _context;
+        private readonly IAuthorRepository _authorRepo;
 
-        public AuthorService(AppDbContext context)
+        public AuthorService(IAuthorRepository authorRepo)
         {
-            _context = context;
+            _authorRepo = authorRepo;
+        }
+
+        public async Task<List<AuthorResponseDto>> GetAuthorsAsync(bool includeBooks)
+        {
+            var authors = await _authorRepo.GetAllAsync(includeBooks);
+
+            return authors.Select(a => new AuthorResponseDto
+            {
+                Id = a.Id,
+                Name = a.Name,
+
+                Books = includeBooks && a.Books != null
+                    ? a.Books.Select(b => new BookDto
+                    {
+                        Id = b.Id,
+                        Title = b.Title
+                    }).ToList()
+                    : new List<BookDto>()
+            }).ToList();
+        }
+
+        public async Task<AuthorResponseDto> GetByIdAsync(Guid id, bool includeBooks)
+        {
+            var author = await _authorRepo.GetByIdAsync(id, includeBooks);
+
+            if(author == null)
+            {
+                throw new NotFoundException("Author tapilmadi");
+            }
+          
+
+            return new AuthorResponseDto
+            {
+                Id = author.Id,
+                Name = author.Name,
+
+                Books = includeBooks && author.Books != null
+                    ? author.Books.Select(b => new BookDto
+                    {
+                        Id = b.Id,
+                        Title = b.Title
+                    }).ToList()
+                    : new List<BookDto>()
+            };
         }
 
         public async Task CreateAsync(CreateAuthorDto dto)
@@ -22,59 +66,33 @@ namespace WebApplication4.Services
                 Name = dto.Name
             };
 
-            _context.Authors.Add(author);
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task<List<AuthorResponseDto>> GetAuthorsAsync(bool book)
-        {
-            return await _context.Authors
-                .Select(a => new AuthorResponseDto
-                {
-                    Id = a.Id,
-                    Name = a.Name   
-                })
-                .ToListAsync();
-        }
-
-        public async Task<AuthorResponseDto> GetByIdAsync(Guid id)
-        {
-            var author = await _context.Authors
-                .FirstOrDefaultAsync(a => a.Id == id);
-
-            if (author == null)
-                return null;
-
-            return new AuthorResponseDto
-            {
-                Id = author.Id,
-                Name = author.Name
-            };
+            await _authorRepo.AddAsync(author);
         }
 
         public async Task UpdateAsync(Guid id, CreateAuthorDto dto)
         {
-            var author = await _context.Authors
-                .FirstOrDefaultAsync(a => a.Id == id);
+            var author = await _authorRepo.GetByIdAsync(id, false);
 
             if (author == null)
-                return;
+            {
+                throw new NotFoundException("Author tapilmadi");
+            }
 
             author.Name = dto.Name;
 
-            await _context.SaveChangesAsync();
+            await _authorRepo.UpdateAsync(author);
         }
 
         public async Task DeleteAsync(Guid id)
         {
-            var author = await _context.Authors
-                .FirstOrDefaultAsync(a => a.Id == id);
+            var author = await _authorRepo.GetByIdAsync(id, false);
 
             if (author == null)
-                return;
+            {
+                throw new NotFoundException("Author tapilmadi");
+            }
 
-            _context.Authors.Remove(author);
-            await _context.SaveChangesAsync();
+            await _authorRepo.DeleteAsync(author);
         }
     }
 }
